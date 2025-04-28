@@ -1,0 +1,163 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/pfizer-rd/genome_manager/nextflow_schema.json",
+    "title": "genome-manager pipeline parameters",
+    "description": "Genome manager to store, pre-process, and retrieve genome files to serve Nextflow pipelines.",
+    "type": "object",
+    "definitions": {
+        "main": {
+            "title": "genome-manager",
+            "type": "object",
+            "description": "genome-manager parameters",
+            "default": "",
+            "properties": {
+                "genome_registry": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "Full path to the top-level directory containing the genome registry"
+                },
+                "system_name": {
+                    "type": "string",
+                    "description": "Compute environment that pipeline will run on, used by genome_registry to determine paths to reference files"
+                },
+                "species": {
+                    "type": "string",
+                    "description": "Species for the genome to be added formatted as <genus>_<species> (e.g., mus_musculus)"
+                },
+                "release": {
+                    "type": "integer",
+                    "description": "Ensembl release number for the genome to be added"
+                },
+                "assembly": {
+                    "type": "string",
+                    "default": null,
+                    "description": "Name of the assembly for the genome to be added. Must match the one available for the specified Ensembl release. Generally not required for most recent genomes of commonly studied species."
+                },
+                "gene_fasta": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to fasta file containing sequence of a custom user-defined gene"
+                },
+                "gene_model": {
+                    "type": "string",
+                    "format": "file-path",
+                    "description": "Path to yaml file containing the gene model for a custom user-defined gene"
+                },
+                "command": {
+                    "type": "string",
+                    "enum": ["register-genome", "register-gene", "update-gene"],
+                    "description": "genome-manager command to use: either 'register-genome', 'register-gene', or 'update-gene'",
+                    "default": null
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "command": {"const": "register-genome"}
+                        },
+                        "required": ["command"]
+                    },
+                    "then": {
+                        "required": [
+                            "genome_registry",
+                            "system_name",
+                            "species",
+                            "release"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "command": {"const": "register-gene"}
+                        },
+                        "required": ["command"]
+                    },
+                    "then": {
+                        "required": [
+                            "genome_registry",
+                            "system_name",
+                            "gene_fasta",
+                            "gene_model"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                    "properties": {
+                        "command": {"const": "update-gene"}
+                    },
+                    "required": ["command"]
+                    },
+                    "then": {
+                        "required": [
+                            "genome_registry",
+                            "system_name",
+                            "gene_model"
+                        ]
+                    }
+                }
+            ]
+        },
+        "star": {
+            "title": "STAR",
+            "type": "object",
+            "description": "STAR parameters",
+            "default": "",
+            "properties": {
+                "readlength": {
+                    "type": "integer",
+                    "description": "Read length used for sequencing (used by STAR genomeGenerate)",
+                    "default": 101
+                }
+            }
+        },
+        "validation": {
+            "title": "Validation",
+            "type": "object",
+            "description": "Validation, help, and logging parameters",
+            "default": "",
+            "properties": {
+                "validate_params": {
+                    "type": "boolean",
+                    "description": "Validate pipeline parameters before running",
+                    "default": true,
+                    "hidden": true
+                },
+                "show_hidden_params": {
+                    "type": "boolean",
+                    "description": "Show hidden parameters",
+                    "default": false,
+                    "hidden": true
+                },
+                "monochrome_logs": {
+                    "type": "boolean",
+                    "description": "Use monochrome coloring for terminal log",
+                    "default": false,
+                    "hidden": true
+                },
+                "schema_ignore_params": {
+                    "type": "string",
+                    "description": "Comma-separated list of parameters to skip validation on",
+                    "default": "",
+                    "hidden": true
+                },
+                "help": {
+                    "type": "boolean",
+                    "description": "Show help and exit",
+                    "default": false,
+                    "hidden": true
+                }
+            }
+        }
+    },
+    "allOf": [
+        {
+            "$ref": "#/definitions/main"
+        },
+        {
+            "$ref": "#/definitions/validation"
+        }
+     ]
+}
